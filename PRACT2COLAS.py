@@ -1,150 +1,156 @@
-class DLDqueue:
-    class Nodo:
-        def __init__(self, dato):
-            self.dato = dato
-            self.siguiente = None
-            self.anterior = None
+class Node:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
 
+    def get_data(self):
+        return self.data
+
+    def set_next(self, next):
+        self.next = next
+
+    def get_next(self):
+        return self.next
+
+class Order:
+    def __init__(self, qtty, customer):
+        self.customer = customer
+        self.qtty = qtty
+
+    def print(self):
+        print(f" Customer: {self.get_customer()}")
+        print(f" Quantity: {self.get_qtty()}")
+        print(" ------------")
+
+    def get_qtty(self):
+        return self.qtty
+
+    def get_customer(self):
+        return self.customer
+
+
+from abc import ABC, abstractmethod
+
+class QueueInterface(ABC):
+    @abstractmethod
+    def size(self): pass
+
+    @abstractmethod
+    def is_empty(self): pass
+
+    @abstractmethod
+    def front(self): pass
+
+    @abstractmethod
+    def enqueue(self, info): pass
+
+    @abstractmethod
+    def dequeue(self): pass
+
+class Queue(QueueInterface):
     def __init__(self):
-        self.cabeza = None
-        self.cola = None
-        self.tamaño = 0
+        self.front_node = None
+        self.rear = None
+        self.size_count = 0
 
-    def insertar_primero(self, obj):
-        nuevo_nodo = self.Nodo(obj)
-        if not self.cabeza:
-            self.cabeza = self.cola = nuevo_nodo
-        else:
-            nuevo_nodo.siguiente = self.cabeza
-            self.cabeza.anterior = nuevo_nodo
-            self.cabeza = nuevo_nodo
-        self.tamaño += 1
+    def size(self):
+        return self.size_count
 
-    def insertar_ultimo(self, obj):
-        nuevo_nodo = self.Nodo(obj)
-        if not self.cola:
-            self.cabeza = self.cola = nuevo_nodo
-        else:
-            nuevo_nodo.anterior = self.cola
-            self.cola.siguiente = nuevo_nodo
-            self.cola = nuevo_nodo
-        self.tamaño += 1
+    def is_empty(self):
+        return self.front_node is None
 
-    def eliminar_primero(self):
-        if not self.cabeza:
+    def front(self):
+        if self.is_empty():
             return None
-        dato = self.cabeza.dato
-        self.cabeza = self.cabeza.siguiente
-        if self.cabeza:
-            self.cabeza.anterior = None
-        else:
-            self.cola = None
-        self.tamaño -= 1
-        return dato
+        return self.front_node.get_data()
 
-    def eliminar_ultimo(self):
-        if not self.cola:
+    def enqueue(self, info):
+        new_node = Node(info)
+        if self.is_empty():
+            self.front_node = new_node
+        else:
+            self.rear.set_next(new_node)
+        self.rear = new_node
+        self.size_count += 1
+
+    def dequeue(self):
+        if self.is_empty():
             return None
-        dato = self.cola.dato
-        self.cola = self.cola.anterior
-        if self.cola:
-            self.cola.siguiente = None
-        else:
-            self.cabeza = None
-        self.tamaño -= 1
-        return dato
+        data = self.front_node.get_data()
+        self.front_node = self.front_node.get_next()
+        if self.front_node is None:
+            self.rear = None
+        self.size_count -= 1
+        return data
 
-    def obtener_tamaño(self):
-        return self.tamaño
+    def print_info(self):
+        print("********* QUEUE DUMP *********")
+        print(f" Size: {self.size_count}")
+        node = self.front_node
+        index = 1
+        while node is not None:
+            print(f" ** Element {index}")
+            node.get_data().print()
+            node = node.get_next()
+            index += 1
+        print("******************************")
 
-    def esta_vacia(self):
-        return self.tamaño == 0
-class DQPila:
-    def __init__(self):
-        self.datos = DLDqueue()
+    def get_nth(self, pos):
+        if pos < 1 or pos > self.size_count:
+            return None
+        node = self.front_node
+        for i in range(1, pos):
+            node = node.get_next()
+        return node.get_data()
 
-    def apilar(self, obj):
-        """Inserta un objeto en la parte superior de la pila."""
-        self.datos.insertar_primero(obj)
+def test_queue():
+    queue = Queue()
 
-    def desapilar(self):
-        """Elimina y devuelve el objeto en la parte superior de la pila."""
-        return self.datos.eliminar_primero()
+    
+    order1 = Order(20, "cust1")
+    order2 = Order(30, "cust2")
+    order3 = Order(40, "cust3")
 
-    def tamaño(self):
-        """Devuelve el número de elementos en la pila."""
-        return self.datos.obtener_tamaño()
+    
+    print("Añadiendo pedido 1:")
+    queue.enqueue(order1)
+    queue.print_info()
 
-    def esta_vacia(self):
-        """Verifica si la pila está vacía."""
-        return self.datos.esta_vacia()
+    print("\nAñadiendo pedido 2:")
+    queue.enqueue(order2)
+    queue.print_info()
 
-    def __str__(self):
-        resultado = []
-        nodo = self.datos.cabeza
-        while nodo:
-            resultado.append(str(nodo.dato))
-            nodo = nodo.siguiente
-        return "Pila: [" + " <- ".join(resultado) + "]"
+    print("\nAñadiendo pedido 3:")
+    queue.enqueue(order3)
+    queue.print_info()
 
+    
+    print("\nFront of queue:")
+    front_order = queue.front()
+    if front_order is not None:
+        front_order.print()
 
-class DQCola:
-    def __init__(self):
-        self.datos = DLDqueue()
+    
+    print("\nDequeue:")
+    dequeued_order = queue.dequeue()
+    if dequeued_order is not None:
+        dequeued_order.print()
 
-    def encolar(self, obj):
-        """Inserta un objeto al final de la cola."""
-        self.datos.insertar_ultimo(obj)
+   
+    print("\nCola después del dequeue:")
+    queue.print_info()
 
-    def desencolar(self):
-        """Elimina y devuelve el objeto al frente de la cola."""
-        return self.datos.eliminar_primero()
+    
+    order4 = Order(50, "cust4")
+    print("\nAñadiendo pedido 4:")
+    queue.enqueue(order4)
+    queue.print_info()
 
-    def tamaño(self):
-        """Devuelve el número de elementos en la cola."""
-        return self.datos.obtener_tamaño()
+    
+    print("\nObteniendo el tercer elemento:")
+    third_order = queue.get_nth(3)
+    if third_order is not None:
+        third_order.print()
 
-    def esta_vacia(self):
-        """Verifica si la cola está vacía."""
-        return self.datos.esta_vacia()
-
-    def __str__(self):
-        resultado = []
-        nodo = self.datos.cabeza
-        while nodo:
-            resultado.append(str(nodo.dato))
-            nodo = nodo.siguiente
-        return "Cola: [" + " -> ".join(resultado) + "]"
-
-
-
-def prueba_pila():
-    print("Probando DQPila (implementación de la pila)...")
-    pila = DQPila()
-    pila.apilar(10)
-    pila.apilar(20)
-    pila.apilar(30)
-    print(pila)
-    print(f"Desapilado: {pila.desapilar()}")
-    print(pila)
-    print(f"Tamaño: {pila.tamaño()}")
-    print(f"Está vacía: {pila.esta_vacia()}")
-    print("-" * 30)
-
-
-def prueba_cola():
-    print("Probando DQCola (implementación de la cola)...")
-    cola = DQCola()
-    cola.encolar(100)
-    cola.encolar(200)
-    cola.encolar(300)
-    print(cola)
-    print(f"Desencolado: {cola.desencolar()}")
-    print(cola)
-    print(f"Tamaño: {cola.tamaño()}")
-    print(f"Está vacía: {cola.esta_vacia()}")
-    print("-" * 30)
-
-
-prueba_pila()
-prueba_cola()
+if __name__ == "__main__":
+    test_queue()
